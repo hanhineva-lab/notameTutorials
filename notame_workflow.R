@@ -1,0 +1,190 @@
+# 1.	Generate a peak abundance matrix from aligned metabolomics data (acquired from the software handling the peak detection and alignment) and save it in an Excel format or as a tab-separated text or CSV file.
+
+# 2. Install the latest Bioconductor  release of notame, notameStats, and notameViz
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("notame")
+BiocManager::install("notameViz")
+BiocManager::install("notameStats")
+
+# 3. Load notame and other necessary packages, set working directory, generate a folder for figures
+
+library(notame)
+library(notameViz)
+library(notameStats)
+library(dplyr)
+library(tidyr)
+path <- "C:/Users/villekoi/Documents/2026 notame test for book chapter/"
+setwd(path)
+dir.create("figures")
+
+# 4. Load the Excel data into R environment and create the SummarizedExperiment data containers
+
+data <- import_from_excel(file = paste0(path, "toy_notame_set.xlsx"), sheet = 1, split_by = "Mode")
+
+# Alternative: use toy_notame_set
+
+data(toy_notame_set)
+
+# 5.	Classify the data as (metabolite) abundances. Create any necessary missing columns for the pheno and feature data, clean the object, and split the object by mode using fix_object.
+
+names(assays(data)) <- "abundances"
+modes <- fix_object(object = data, split_data = TRUE, assay.type = "abundances")
+
+# 6. Ensure that the objects contain all the data in the correct form
+
+names(modes)
+sapply(modes, class)
+
+# 7. Take several processor cores into use. Leave two cores for other purposes.
+
+library(BiocParallel)
+register(SnowParam(workers=snowWorkers() - 2))
+
+# 8. Perform the contaminant flagging, quality check, and drift correction on each mode separately within a loop and create visualisations of the various phases of the process in the figures folder of the working directory
+
+# Initialize empty list for processed objects
+processed <- list()
+for (i in seq_along(modes)) {
+  name <- names(modes)[i]
+  mode <- modes[[i]]
+  mode <- mark_nas(mode, value = 0) # Set all zero abundances to NA
+  mode <- flag_detection(mode, group = "Group") # Flag features with low detection rate
+  mode <- flag_contaminants(mode, blank_col = "QC", blank_label = "Blank", blank_type = "mean", sample_type = "max", flag_thresh = 5) # Flag contaminant features
+  mode <- mode[, mode$QC != "Blank"] # Remove blanks
+  save_QC_plots(mode, prefix = paste0(path, "figures/", name, "_ORIG"), perplexity = 5, group = "Group", time = "Time", id = "Subject_ID", color = "Group") # Visualize data before drift correction
+  corrected <- correct_drift(mode) # Correct drift
+  save_QC_plots(corrected, prefix = paste0(path, "figures/", name, "_DRIFT"), perplexity = 5, group = "Group", time = "Time", id = "Subject_ID", color = "Group") # Visualize data after drift correction
+  corrected <- corrected %>% 
+    assess_quality() %>% 
+    flag_quality() # Flag low-quality features
+  save_QC_plots(corrected, prefix = paste0(path, "figures/", name, "_CLEAN"), perplexity = 5, group = "Group", time = "Time", id = "Subject_ID", color = "Group") # Visualize data after removal of low-quality features
+  processed[[i]] <- corrected # Save iterated results
+}
+
+# Release the cores
+
+register(SerialParam())
+
+# 9. Merge the processed data and create visualisations of the whole data
+
+merged <- merge_notame_sets(object = processed)
+save_QC_plots(merged, prefix = paste0(path, "figures/_FULL"),
+              group = "Group", time = "Time",
+              id = "Subject_ID", color = "Group")
+
+# 13.	Set a seed number for reproducibility, such as 10.
+set.seed(10)
+
+# 14.	Perform the first round of imputation with the random forest method on the good-quality features.
+imputed <- impute_rf(object = merged, all_features = FALSE)
+
+# 15.	Perform the second round of imputation by imputing 1 for the remaining features with more than 90% missing values.
+imputed <- impute_simple(object = imputed, value = 1, na_limit = 0.9)
+
+# 16.	Perform the third round of imputation with the random forest method for the remaining features.
+imputed <- impute_rf(object = imputed, all_features = TRUE)
+
+#---- NOT WORKING, PACKAGE NEEDS UPDATING:
+# 10.	Perform batch correction if the samples were analysed in more than one batch. By default, the QC samples are named as “QC”.
+library(batchCorr)
+batch_corrected <- batchCorr::normalizeBatches(peakTableCorr = imputed, batches = "Batch", sampleGroup = "QC", refGroup = "QC", population = "all", assay.type = "abundances", name = "normalized")
+#----
+
+# 12. Remove the QC sample information and save visualisations once more without QC samples
+
+merged_no_qc <- drop_qcs(imputed) # should be for object batch_corrected but it cannot be generated atm
+save_QC_plots(merged_no_qc, prefix = paste0(path, "figures/FULL_NO_QC"),
+              group = "Group", time = "Time",
+              id = "Subject_ID", color = "Group")
+
+# 17.	Optional step: Cluster the molecular features. Use the same time unit as the retention time information in the data.
+clustered <- cluster_features(object = merged_no_qc, rt_window = 1/60, corr_thresh = 0.9, d_thresh = 0.8)
+
+# 18.	Calculate the summary statistics for each molecular feature
+summary_statistics <- summary_statistics(object = imputed, grouping_cols = NULL)
+
+# 19.	Calculate the area under the curve (AUC) for each feature and study subject in studies where samples from several time points are included. The resulting object contains the AUC values for each subject and it can be used for statistics, such as t-test (step 21).
+aucs <- perform_auc(object = imputed, time = "Time", subject = "Subject_ID", group = "Group")
+
+# 20.	Calculate fold changes between the study groups. If there are more than two study groups, the function will by default calculate the fold changes between all possible pairs. group_col(object) is the group given in step 5 and can be replaced with the name of another column containing sample grouping.
+fc <- fold_change(object = imputed, group = "Group")
+
+# 21.	Calculate Cohen’s d between the study groups. This can be done for two specified groups at a time. If id (for subject ID) and time are given, Cohen’s d will be computed for the change in time.
+cohens_d <- cohens_d(object = imputed, group = "Group", id = "Subject_ID", time = "Time")
+
+# 22.	Perform Welch’s t-test between two or more study groups. In case more than two study groups exist, all possible pairs will be tested separately. This function and several other statistical functions use a formula interface, where Feature is replaced by the ID of the molecular feature in each iteration. If the group variances are known to be equal, a Student’s t-test can be performed using the same function by setting the attribute var.equal = TRUE.
+t_test_results <- perform_t_test(object = imputed, formula_char = "Feature ~ Group")
+
+# 23.	Perform Mann–Whitney U test between two study groups.
+mann_whitney_results <- perform_non_parametric(object = imputed, formula_char = "Feature ~ Group")
+
+# 24.	Perform paired parametric t-test between two study groups.
+paired_t_results <- perform_t_test(object = imputed, formula_char = "Feature ~ Group", is_paired = TRUE, id = "Subject_ID")
+
+# 25.	Perform paired non-parametric t-test (Wilcoxon signed-rank test) between two study groups.
+wilcoxon_results <- perform_non_parametric(object = imputed, formula_char = "Feature ~ Group", is_paired = TRUE, id = "Subject_ID")
+
+# 26.	Perform Welch’s ANOVA to compare the averages of two or more study groups.
+oneway_anova_results <- perform_oneway_anova(object = imputed, formula_char = "Feature ~ Group")
+
+# 27.	Perform Kruskal–Wallis test to compare the averages of two or more study groups.
+Kruskal_wallis_results <- perform_kruskal_wallis(object = imputed, formula_char = "Feature ~ Group")
+
+# 28.	Perform a linear model to study whether the molecular features predict the difference in selected fixed effects, such as group and time, as well as their interaction. An equivalent formula would be "Feature ~ Group * Time".
+lm_results <- perform_lm(object = imputed, formula_char = "Feature ~ Group + Time + Group:Time")
+
+# 29.	Perform a linear mixed model to study whether the molecular features predict the difference in selected fixed effects, such as group and time, and the contribution of random effects, such as subject ID. The confidence interval for the parameters is by default calculated with the Wald method, which is suitable for large datasets with normally distributed effects. In other cases, profile or boot (bootstrapped) confidence interval should be considered.
+lmer_results <- perform_lmer(object = imputed, formula_char = "Feature ~ Group + Time + (1 | Subject_ID)", ci_method = "Wald")
+
+# 30.	Perform MUVR to select relevant molecular features for the target variable y to predict. The number of iterations (nRep) is recommended to be at least 30.
+rf_model <- muvr_analysis(object = imputed, y = "Group", nRep = 30, method = "RF")
+
+# 31.	Combine the statistics results (needed for manual annotation of metabolites) into the main preprocessed object. In this example, results from the Mann–Whitney U-test and linear model were chosen. Export the combined data object into an Excel table.
+with_results <- join_rowData(imputed, cohens_d)
+with_results <- join_rowData(with_results, mann_whitney_results)
+with_results <- join_rowData(with_results, lm_results)
+
+write_to_excel(with_results, file = paste0(path, "imputed_statistics.xlsx"))
+
+# 32.	Perform manual annotation of metabolites and add manual metabolite ID (column Curated_ID), MSI ID level (column ID_level), and manually chosen representative ion columns (column Representative_ion, where the representative ions have been marked with x). Remove the extra rows, so that Feature_ID etc. become the column names (top rows). Save the Excel file under a new name, such as curated_data.xlsx.
+
+# 33.	Join the manual annotation results from the Excel file (via openxlsx package) as extra data columns to the with_results object. Ensure that there is at least one redundant column common for both datasets, such as the unique Feature ID generated by notame.
+extra_data <- openxlsx::read.xlsx(paste0(path, "curated_data.xlsx"))
+colnames(extra_data)
+extra_data <- extra_data[, c("Feature_ID", "Curated_ID", "ID_level", "Representative_ion")]
+with_results <- join_rowData(object = with_results, rowData = extra_data, by = "Feature_ID")
+
+# 34.	Generate an object containing only the representative ions of each annotated metabolite.
+annotated <- with_results[!is.na(rowData(with_results)$Representative_ion) & rowData(with_results)$Representative_ion == "x", ]
+                                  
+# 35.	Calculate Spearman correlation coefficients and p-values between the annotated metabolites.
+correlations <- perform_correlation_tests(object = annotated, x = rownames(annotated), method = "spearman")
+
+# 36.	Calculate Kendall’s τ correlation coefficients and p-values between the annotated metabolites and two sample information variables: time and injection order.
+correlations_variables <- perform_correlation_tests(object = annotated, x = rownames(annotated), y = c("Time", "Injection_order"), method = "kendall")
+    
+# ----DOESN'T WORK:
+# 37.	Merge the additional statistics results; repeat the step until all the desired results are in the same object. Export again into an Excel table, now containing all the results from the statistics and annotation.
+with_results <- join_rowData(with_results, correlations)
+write_to_excel(with_results, file = paste0(path, "imputed_annotated_statistics.xlsx"))
+#----
+                          
+# 38.	Plot a PCA including the first two principal components, unit variance scaling, density curves, Group defining the colour, and Time defining the shape.
+plot_pca(object = imputed, pcs = c(1, 2), scale = "uv", density = TRUE, color = "Group", shape = "Time")
+
+# 39.	Plot an arrow t-SNE including the first two principal components, unit variance scaling, density curves, the colour defining grouping variable 1, the time point for constructing the arrows, and subject ID. If the sample size is large and the image becomes crowded, it is possible to show the groups in separate faceted plots by adding + facet_wrap(~Group) at the end of the code.
+plot_tsne_arrows(object = imputed, scale = "uv", perplexity = 10, color = "Group", time = "Time", subject = "Subject_ID", arrow_style = arrow(angle = 30, length = unit(0.15, "inches"), ends = "last", type = "open"), line_width = 0.75) + facet_wrap(~Group)
+
+# 40.	Generate an effect heatmap from the correlation results between annotated metabolites and a set of other variables. Include only the manually annotated unique metabolites (see steps 17 and 18).
+plot_effect_heatmap(correlations, x = "X", y = "Y", effect = "Correlation_coefficient", p = "Correlation_P_FDR", point_size_range = c(2, 8), discretize_effect = TRUE, breaks = 7, lower_tri = TRUE)
+
+# 41.	Generate a volcano plot from a pairwise comparison by using the Cohen’s d and FDR-corrected p-values from the pairwise statistical test, log2-transform the x-axis, centre the zero effect point, and label those metabolites with manually curated identifications and FDR < 0.05.
+volcano_plot(object = with_results, x = "B_vs_A_2_minus_1_Cohen_d", p = "GroupB.Time2.p.value", log2_x = TRUE, center_x_axis = TRUE, label = "Curated_ID", label_limit = 0.05)
+
+# 42.	Save boxplots of all features by group, with “Curated ID” column used to label the metabolites, into a single PDF file.
+save_group_boxplots(object = annotated, file_path = "./figures/group_boxplots.pdf", format = "pdf", x = "Group", title = "Curated_ID", color = "Group")
+
+# 43.	Save beeswarm plots of unique identified features (see steps 30 and 31) by group into separate PNG files.
+save_beeswarm_plots(object = annotated, file_path = "./figures/beeswarm_plots/", format = "png", x = "Group", color = "Group")
