@@ -1,6 +1,9 @@
 # renv directory
 renv/
 
+# Data directory
+data/
+
 # RStudio files
 .Rproj.user/env/
 
