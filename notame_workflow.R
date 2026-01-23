@@ -42,7 +42,7 @@ data <- import_from_excel(
 # Alternative: use toy_notame_set
 data(toy_notame_set)
 # And then assign it to data (remove the comment #)
-# data <- toy_notame_set
+data <- toy_notame_set
 
 # 5. Classify the data as (metabolite) abundances. Create any necessary
 # missing columns for the pheno and feature data, clean the object, and
