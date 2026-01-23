@@ -325,11 +325,7 @@ extra_data <- extra_data[, c(
   "ID_level",
   "Representative_ion"
 )]
-with_results <- join_rowData(
-  object = with_results,
-  rowData = extra_data,
-  by = "Feature_ID"
-)
+with_results <- join_rowData(object = with_results, extra_data)
 
 # 34. Generate an object containing only the representative ions of
 # each annotated metabolite
