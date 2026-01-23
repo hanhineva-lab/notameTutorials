@@ -356,7 +356,7 @@ correlations_variables <- perform_correlation_tests(
 with_results <- join_rowData(with_results, correlations)
 write_to_excel(
   with_results,
-  file = paste0(path, "imputed_annotated_statistics.xlsx")
+  file = file.path("data", "imputed_annotated_statistics.xlsx")
 )
 #----
 # 38. Plot a PCA including the first two principal components, unit
@@ -427,7 +427,7 @@ volcano_plot(
 # used to label the metabolites, into a single PDF file
 save_group_boxplots(
   object = annotated,
-  file_path = "./figures/group_boxplots.pdf",
+  file_path = file.path(path, "figures", "group_boxplots.pdf"),
   format = "pdf",
   x = "Group",
   title = "Curated_ID",
@@ -438,7 +438,7 @@ save_group_boxplots(
 # and 31) by group into separate PNG files
 save_beeswarm_plots(
   object = annotated,
-  file_path = "./figures/beeswarm_plots/",
+  file_path = file.path(path, "figures", "beeswarm_plots"),
   format = "png",
   x = "Group",
   color = "Group"
