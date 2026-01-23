@@ -1,0 +1,16 @@
+# renv directory
+renv/
+
+# RStudio files
+.Rproj.user/env/
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# R Environment variables
+.Renviron
+
+# History files
+.Rhistory
+.Rapp.history
