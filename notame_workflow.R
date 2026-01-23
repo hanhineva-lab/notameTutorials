@@ -2,16 +2,18 @@
 # (acquired from the software handling the peak detection and alignment)
 # and save it in an Excel format or as a tab-separated text or CSV file.
 
-# 2. Install the latest Bioconductor  release of notame, notameStats,
-# and notameViz
+# 2. Install renv, initialize, activate and restore the project environment
 
 if (!requireNamespace("renv", quietly = TRUE)) {
   remotes::install_version("renv", "1.1.6")
 }
 
-# BiocManager::install("notame")
-# BiocManager::install("notameViz")
-# BiocManager::install("notameStats")
+# When presented with an option select "1: Restore the project from the
+# lockfile."
+# Then proceed with activation and restoration
+renv::init()
+renv::activate()
+renv::restore()
 
 # 3. Load notame and other necessary packages, set working directory,
 # generate a folder for figures
@@ -36,12 +38,12 @@ data <- import_from_excel(
 
 # Alternative: use toy_notame_set
 data(toy_notame_set)
-# And then assign it to data
+# And then assign it to data (remove the comment #)
 # data <- toy_notame_set
 
 # 5. Classify the data as (metabolite) abundances. Create any necessary
 # missing columns for the pheno and feature data, clean the object, and
-# split the object by mode using fix_object.
+# split the object by mode using fix_object
 
 names(assays(data)) <- "abundances"
 modes <- fix_object(object = data, split_data = TRUE, assay.type = "abundances")
@@ -244,7 +246,8 @@ wilcoxon_results <- perform_non_parametric(
   id = "Subject_ID"
 )
 
-# 26. Perform Welch’s ANOVA to compare the averages of two or more study groups
+# 26. Perform Welch’s ANOVA to compare the averages of two or more study
+# groups
 oneway_anova_results <- perform_oneway_anova(
   object = imputed,
   formula_char = "Feature ~ Group"
