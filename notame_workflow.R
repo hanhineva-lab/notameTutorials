@@ -4,6 +4,9 @@
 
 # 2. Install renv, initialize, activate and restore the project environment
 
+if (!requireNamespace("remotes", quietly = TRUE)) {
+  install.packages("remotes")
+}
 if (!requireNamespace("renv", quietly = TRUE)) {
   remotes::install_version("renv", "1.1.6")
 }
@@ -11,7 +14,7 @@ if (!requireNamespace("renv", quietly = TRUE)) {
 # When presented with an option select "1: Restore the project from the
 # lockfile."
 # Then proceed with activation and restoration
-renv::init()
+renv::init(bioconductor = "3.22")
 renv::activate()
 renv::restore()
 
