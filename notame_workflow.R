@@ -7,12 +7,8 @@ if (!requireNamespace("renv", quietly = TRUE)) {
   install.packages("renv")
 }
 
-# If presented with an option select "1: Restore the project from the
-# lockfile."
-# Then proceed with init and restoration
-renv::init(bioconductor = "3.22")
-# The installation of missing packages should start now
-# To be sure everything is install, you can also run renv::restore() below
+# Activate and restore environment from renv.lock
+renv::activate()
 renv::restore()
 
 # 3. Load notame and other necessary packages, set working directory,
