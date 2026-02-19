@@ -11,7 +11,7 @@ if (!requireNamespace("renv", quietly = TRUE)) {
 renv::activate()
 renv::restore()
 
-# 3. Load notame and other necessary packages, set working directory,
+# 3. Load notame and other necessary packages, set paths,
 # generate a folder for figures
 
 library(notame)
@@ -32,14 +32,14 @@ library(MUVR2)
 dir.create(file.path("data", "figures"))
 
 # Set path for all data
-path <- file.path("data")
+ppath <- file.path("data")
 
 # 4. Choose from the following alternatives based on your data.
 # a) Load the Excel data containing all modes into R environment and create the 
 # SummarizedExperiment data containers.
 
 se <- import_from_excel(
-  file = file.path(path, "toy_notame_set.xlsx"),
+  file = file.path(ppath, "toy_notame_set.xlsx"),
   sheet = 1,
   split_by = "Mode"
 )
@@ -102,7 +102,7 @@ for (i in seq_along(modes)) {
   mode <- mode[, mode$QC != "Blank"] # Remove blanks
   save_QC_plots(
     mode,
-    prefix = file.path(path, "figures", paste0(name, "_ORIG")),
+    prefix = file.path(ppath, "figures", paste0(name, "_ORIG")),
     perplexity = 5,
     group = "Group",
     time = "Time",
@@ -112,7 +112,7 @@ for (i in seq_along(modes)) {
   corrected <- correct_drift(mode) # Correct drift
   save_QC_plots(
     corrected,
-    prefix = file.path(path, "figures", paste0(name, "_DRIFT")),
+    prefix = file.path(ppath, "figures", paste0(name, "_DRIFT")),
     perplexity = 5,
     group = "Group",
     time = "Time",
@@ -124,7 +124,7 @@ for (i in seq_along(modes)) {
     flag_quality() # Flag low-quality features
   save_QC_plots(
     corrected,
-    prefix = file.path(path, "figures", paste0(name, "_CLEAN")),
+    prefix = file.path(ppath, "figures", paste0(name, "_CLEAN")),
     perplexity = 5,
     group = "Group",
     time = "Time",
@@ -143,7 +143,7 @@ register(SerialParam())
 merged <- merge_notame_sets(object = processed)
 save_QC_plots(
   merged,
-  prefix = file.path(path, "figures", paste0(name, "_FULL")),
+  prefix = file.path(ppath, "figures", paste0(name, "_FULL")),
   group = "Group",
   time = "Time",
   id = "Subject_ID",
@@ -185,7 +185,7 @@ batch_corrected <- batchCorr::normalizeBatches(
 merged_no_qc <- drop_qcs(imputed) # should be for object batch_corrected but it cannot be generated atm
 save_QC_plots(
   merged_no_qc,
-  prefix = file.path(path, "figures", paste0(name, "FULL_NO_QC")),
+  prefix = file.path(ppath, "figures", paste0(name, "FULL_NO_QC")),
   group = "Group",
   time = "Time",
   id = "Subject_ID",
@@ -321,7 +321,7 @@ with_results <- join_rowData(imputed, cohens_d)
 with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
-write_to_excel(with_results, file = file.path(path, "imputed_statistics.xlsx"))
+write_to_excel(with_results, file = file.path(ppath, "imputed_statistics.xlsx"))
 
 
 # 32. Perform manual annotation of metabolites and add manual
@@ -445,7 +445,7 @@ volcano_plot(
 # used to label the metabolites, into a single PDF file
 save_group_boxplots(
   object = annotated,
-  file_path = file.path(path, "figures", "group_boxplots.pdf"),
+  file_path = file.path(ppath, "figures", "group_boxplots.pdf"),
   format = "pdf",
   x = "Group",
   title = "Curated_ID",
@@ -456,7 +456,7 @@ save_group_boxplots(
 # and 31) by group into separate PNG files
 save_beeswarm_plots(
   object = annotated,
-  file_path = file.path(path, "figures", "beeswarm_plots"),
+  file_path = file.path(ppath, "figures", "beeswarm_plots"),
   format = "png",
   x = "Group",
   color = "Group"
