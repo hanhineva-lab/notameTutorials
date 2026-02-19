@@ -150,24 +150,31 @@ save_QC_plots(
   color = "Group"
 )
 
-# 13. Set a seed number for reproducibility, such as 10
+# 10. Set a seed number for reproducibility, such as 10, for the random
+# forest imputation
+
 set.seed(10)
 
-# 14. Perform the first round of imputation with the random forest
-# method on the good-quality features
+# 11. Perform the first round of imputation with the random forest
+# method on the good-quality features. Please note that RF imputation
+# may generate values that change the biological interpretation of the
+# data and it should be applied with caution (see https://zenodo.org/records/18621244).
+
 imputed <- impute_rf(object = merged, all_features = FALSE)
 
-# 15. Perform the second round of imputation by imputing 1 for the
-# remaining features with more than 90% missing values
-imputed <- impute_simple(object = imputed, value = 1, na_limit = 0.9)
+# 12. Perform the second round of imputation by imputing 1 for the
+# remaining features with more than 50% missing values.
 
-# 16. Perform the third round of imputation with the random forest
+imputed <- impute_simple(object = imputed, value = 1, na_limit = 0.5)
+
+# 13. Perform the third round of imputation with the random forest
 # method for the remaining features
+
 imputed <- impute_rf(object = imputed, all_features = TRUE)
 
-#---- NOT WORKING, PACKAGE NEEDS UPDATING:
-# 10. Perform batch correction if the samples were analysed in more than
+# 14. Perform batch correction if the samples were analysed in more than
 # one batch. By default, the QC samples are named as “QC”
+
 library(batchCorr)
 batch_corrected <- batchCorr::normalizeBatches(
   peakTableCorr = imputed,
@@ -178,11 +185,10 @@ batch_corrected <- batchCorr::normalizeBatches(
   assay.type = "abundances",
   name = "normalized"
 )
-#----
 
-# 12. Remove the QC sample information and save visualisations once more
+# 15. Remove the QC sample information and save visualisations once more
 # without QC samples
-merged_no_qc <- drop_qcs(imputed) # should be for object batch_corrected but it cannot be generated atm
+merged_no_qc <- drop_qcs(imputed) # change object if batch correction was applied
 save_QC_plots(
   merged_no_qc,
   prefix = file.path(ppath, "figures", paste0(name, "FULL_NO_QC")),
@@ -192,7 +198,7 @@ save_QC_plots(
   color = "Group"
 )
 
-# 17. Optional step: Cluster the molecular features. Use the same time
+# 16. Optional step: Cluster the molecular features. Use the same time
 # unit as the retention time information in the data
 clustered <- cluster_features(
   object = merged_no_qc,
