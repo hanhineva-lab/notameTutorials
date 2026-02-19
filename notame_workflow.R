@@ -35,7 +35,7 @@ dir.create(file.path("data", "figures"))
 ppath <- file.path("data")
 
 # 4. Choose from the following alternatives based on your data.
-# a) Load the Excel data containing all modes into R environment and create the 
+# a) Load the Excel data containing all modes into R environment and create the
 # SummarizedExperiment data containers.
 
 se <- import_from_excel(
@@ -44,16 +44,19 @@ se <- import_from_excel(
   split_by = "Mode"
 )
 
-# b) If the modes (in this example, four modes named HILIC_neg.xlsx, etc.) are in 
-# separate spreadsheets, load them separately while ensuring they have the same run 
-# sequence (the same number and order of samples in the columns). It is recommended 
+# b) If the modes (in this example, four modes named HILIC_neg.xlsx, etc.) are in
+# separate spreadsheets, load them separately while ensuring they have the same run
+# sequence (the same number and order of samples in the columns). It is recommended
 # to merge them as well at this point into one SummarizedExperiment object.
 
-modesList <- c("HILIC_neg", "HILIC_pos", "RP_neg", "RP_pos") 
+modesList <- c("HILIC_neg", "HILIC_pos", "RP_neg", "RP_pos")
 modes <- list()
 for (mode in modesList) {
   # Read single mode, set it in the list
-  modes[[mode]] <- import_from_excel(file = file.path(ppath, mode, ".xlsx"), name = mode)
+  modes[[mode]] <- import_from_excel(
+    file = file.path(ppath, mode, ".xlsx"),
+    name = mode
+  )
 }
 se <- merge_notame_sets(object = modes)
 
@@ -335,9 +338,9 @@ rf_model <- muvr_analysis(
 # the outcome y, while controlling overfitting
 
 pls_opt <- mixomics_pls_optimize(
-  object = object, 
-  y = "Group", 
-  ncomp = 3, 
+  object = object,
+  y = "Group",
+  ncomp = 3,
   nrepeat = 5
 )
 
@@ -440,8 +443,8 @@ plot_tsne_arrows(
 ) +
   facet_wrap(~Group)
 
-# 39. Generate an effect heatmap with hierarchical clustering from the 
-# correlation results (object correlations generated in Step 35) between the 
+# 39. Generate an effect heatmap with hierarchical clustering from the
+# correlation results (object correlations generated in Step 35) between the
 # annotated metabolites
 
 plot_effect_heatmap(
@@ -462,19 +465,19 @@ plot_effect_heatmap(
 # metabolites with manually curated identifications and FDR < 0.05
 
 volcano_plot(
-  object = with_results, 
-  x = "B_vs_A_FC", 
-  p = "GroupB.Time2.p.value", 
-  color = "B_vs_A_2_minus_1_Cohen_d", 
-  log2_x = TRUE, 
-  center_x_axis = TRUE, 
-  label = "Curated_ID", 
-  label_limit = 0.05, 
+  object = with_results,
+  x = "B_vs_A_FC",
+  p = "GroupB.Time2.p.value",
+  color = "B_vs_A_2_minus_1_Cohen_d",
+  log2_x = TRUE,
+  center_x_axis = TRUE,
+  label = "Curated_ID",
+  label_limit = 0.05,
   title = NULL
 ) +
   labs(
-    x = "Fold change 2 vs 1", 
-    y = "p-value", 
+    x = "Fold change 2 vs 1",
+    y = "p-value",
     color = "Cohen's d"
   )
 
@@ -490,7 +493,7 @@ save_group_boxplots(
   color = "Group"
 )
 
-# 42. Save beeswarm plots of unique identified features by group 
+# 42. Save beeswarm plots of unique identified features by group
 # into separate PNG files
 
 save_beeswarm_plots(
