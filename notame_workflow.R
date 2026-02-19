@@ -34,26 +34,40 @@ dir.create(file.path("data", "figures"))
 # Set path for all data
 path <- file.path("data")
 
-# 4. Load the Excel data into R environment and create the
-# SummarizedExperiment data containers
+# 4. Choose from the following alternatives based on your data.
+# a) Load the Excel data containing all modes into R environment and create the 
+# SummarizedExperiment data containers.
 
-data <- import_from_excel(
+se <- import_from_excel(
   file = file.path(path, "toy_notame_set.xlsx"),
   sheet = 1,
   split_by = "Mode"
 )
 
-# Alternative: use toy_notame_set
+# b) If the modes (in this example, four modes named HILIC_neg.xlsx, etc.) are in 
+# separate spreadsheets, load them separately while ensuring they have the same run 
+# sequence (the same number and order of samples in the columns). It is recommended 
+# to merge them as well at this point into one SummarizedExperiment object.
+
+modesList <- c("HILIC_neg", "HILIC_pos", "RP_neg", "RP_pos") 
+modes <- list()
+for (mode in modesList) {
+  # Read single mode, set it in the list
+  modes[[mode]] <- import_from_excel(file = file.path(ppath, mode, ".xlsx"), name = mode)
+}
+se <- merge_notame_sets(object = modes)
+
+# c) Explore and test the package with toy_notame_set
 data(toy_notame_set)
 # And then assign it to data (remove the comment #)
-data <- toy_notame_set
+se <- toy_notame_set
 
 # 5. Classify the data as (metabolite) abundances. Create any necessary
 # missing columns for the pheno and feature data, clean the object, and
 # split the object by mode using fix_object
 
-names(assays(data)) <- "abundances"
-modes <- fix_object(object = data, split_data = TRUE, assay.type = "abundances")
+names(assays(se)) <- "abundances"
+modes <- fix_object(object = se, split_data = TRUE, assay.type = "abundances")
 
 # 6. Ensure that the objects contain all the data in the correct form
 
