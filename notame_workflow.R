@@ -331,7 +331,17 @@ rf_model <- muvr_analysis(
   method = "RF"
 )
 
-# 30. Combine the statistics results (needed for manual annotation of
+# 30. Perform PLS to identify a stable set of metabolites that best explain
+# the outcome y, while controlling overfitting
+
+pls_opt <- mixomics_pls_optimize(
+  object = object, 
+  y = "Group", 
+  ncomp = 3, 
+  nrepeat = 5
+)
+
+# 31. Combine the statistics results (needed for manual annotation of
 # metabolites) into the main preprocessed object. In this example, results
 # from the Mann–Whitney U-test and linear model were chosen. Export the
 # combined data object into an Excel table
@@ -342,7 +352,6 @@ with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
 write_to_excel(with_results, file = file.path(ppath, "imputed_statistics.xlsx"))
-
 
 # 32. Perform manual annotation of metabolites and add manual
 # metabolite ID (column Curated_ID), MSI ID level (column ID_level), and
