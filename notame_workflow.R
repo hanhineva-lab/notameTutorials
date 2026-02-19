@@ -207,13 +207,15 @@ clustered <- cluster_features(
   d_thresh = 0.8
 )
 
-# 18. Calculate the summary statistics for each molecular feature
+# 17. Calculate the summary statistics for each molecular feature
+
 summary_statistics <- summary_statistics(object = imputed, grouping_cols = NULL)
 
-# 19. Calculate the area under the curve (AUC) for each feature and
+# 18. Calculate the area under the curve (AUC) for each feature and
 # study subject in studies where samples from several time points are
 # included. The resulting object contains the AUC values for each subject
 # and it can be used for statistics, such as t-test (step 21).
+
 aucs <- perform_auc(
   object = imputed,
   time = "Time",
@@ -221,16 +223,18 @@ aucs <- perform_auc(
   group = "Group"
 )
 
-# 20. Calculate fold changes between the study groups. If there are more
+# 19. Calculate fold changes between the study groups. If there are more
 # than two study groups, the function will by default calculate the fold
 # changes between all possible pairs. group_col(object) is the group given
 # in step 5 and can be replaced with the name of another column containing
 # sample grouping
+
 fc <- fold_change(object = imputed, group = "Group")
 
-# 21. Calculate Cohen’s d between the study groups. This can be done for
+# 20. Calculate Cohen’s d between the study groups. This can be done for
 # two specified groups at a time. If id (for subject ID) and time are
 # given, Cohen’s d will be computed for the change in time
+
 cohens_d <- cohens_d(
   object = imputed,
   group = "Group",
@@ -238,25 +242,28 @@ cohens_d <- cohens_d(
   time = "Time"
 )
 
-# 22. Perform Welch’s t-test between two or more study groups. In case
+# 21. Perform Welch’s t-test between two or more study groups. In case
 # more than two study groups exist, all possible pairs will be tested
 # separately. This function and several other statistical functions use a
 # formula interface, where Feature is replaced by the ID of the molecular
 # feature in each iteration. If the group variances are known to be equal,
 # a Student’s t-test can be performed using the same function by setting
 # the attribute var.equal = TRUE
+
 t_test_results <- perform_t_test(
   object = imputed,
   formula_char = "Feature ~ Group"
 )
 
-# 23. Perform Mann–Whitney U test between two study groups
+# 22. Perform Mann–Whitney U test between two study groups
+
 mann_whitney_results <- perform_non_parametric(
   object = imputed,
   formula_char = "Feature ~ Group"
 )
 
-# 24. Perform paired parametric t-test between two study groups
+# 23. Perform paired parametric t-test between two study groups
+
 paired_t_results <- perform_t_test(
   object = imputed,
   formula_char = "Feature ~ Group",
@@ -264,8 +271,9 @@ paired_t_results <- perform_t_test(
   id = "Subject_ID"
 )
 
-# 25. Perform paired non-parametric t-test (Wilcoxon signed-rank test)
+# 24. Perform paired non-parametric t-test (Wilcoxon signed-rank test)
 # between two study groups
+
 wilcoxon_results <- perform_non_parametric(
   object = imputed,
   formula_char = "Feature ~ Group",
@@ -273,43 +281,47 @@ wilcoxon_results <- perform_non_parametric(
   id = "Subject_ID"
 )
 
-# 26. Perform Welch’s ANOVA to compare the averages of two or more study
+# 25. Perform Welch’s ANOVA to compare the averages of two or more study
 # groups
+
 oneway_anova_results <- perform_oneway_anova(
   object = imputed,
   formula_char = "Feature ~ Group"
 )
 
-# 27. Perform Kruskal–Wallis test to compare the averages of two or more
+# 26. Perform Kruskal–Wallis test to compare the averages of two or more
 # study groups
-Kruskal_wallis_results <- perform_kruskal_wallis(
+
+kruskal_wallis_results <- perform_kruskal_wallis(
   object = imputed,
   formula_char = "Feature ~ Group"
 )
 
-# 28. Perform a linear model to study whether the molecular features
+# 27. Perform a linear model to study whether the molecular features
 # predict the difference in selected fixed effects, such as group and
 # time, as well as their interaction. An equivalent formula would be
 # "Feature ~ Group * Time"
+
 lm_results <- perform_lm(
   object = imputed,
   formula_char = "Feature ~ Group + Time + Group:Time"
 )
 
-# 29. Perform a linear mixed model to study whether the molecular
+# 28. Perform a linear mixed model to study whether the molecular
 # features predict the difference in selected fixed effects, such as group
 # and time, and the contribution of random effects, such as subject ID.
 # The confidence interval for the parameters is by default calculated with
 # the Wald method, which is suitable for large datasets with normally
 # distributed effects. In other cases, profile or boot (bootstrapped)
 # confidence interval should be considered
+
 lmer_results <- perform_lmer(
   object = imputed,
   formula_char = "Feature ~ Group + Time + (1 | Subject_ID)",
   ci_method = "Wald"
 )
 
-# 30. Perform MUVR to select relevant molecular features for the
+# 29. Perform MUVR to select relevant molecular features for the
 # target variable y to predict. The number of iterations (nRep) is
 # recommended to be at least 30
 rf_model <- muvr_analysis(
@@ -319,11 +331,13 @@ rf_model <- muvr_analysis(
   method = "RF"
 )
 
-# 31. Combine the statistics results (needed for manual annotation of
+# 30. Combine the statistics results (needed for manual annotation of
 # metabolites) into the main preprocessed object. In this example, results
 # from the Mann–Whitney U-test and linear model were chosen. Export the
 # combined data object into an Excel table
+
 with_results <- join_rowData(imputed, cohens_d)
+with_results <- join_rowData(with_results, fc)
 with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
