@@ -28,7 +28,7 @@ library(PK)
 library(MuMIn)
 library(MUVR2)
 
-# Set path for all data
+# Set path for your project
 ppath <- file.path("C:/project folder") # Replace path with your project folder
 
 # Create the path for output data and figures
@@ -351,7 +351,8 @@ pls_opt <- mixomics_pls_optimize(
 # 31. Combine the statistics results (needed for manual annotation of
 # metabolites) into the main preprocessed object. In this example, results
 # from the Mann–Whitney U-test and linear model were chosen. Export the
-# combined data object into an Excel table
+# combined data object into an Excel table. Save data objects to open 
+# them later.
 
 with_results <- join_rowData(imputed, cohens_d)
 with_results <- join_rowData(with_results, fc)
@@ -359,6 +360,11 @@ with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
 write_to_excel(with_results, file = file.path(ppath, "imputed_statistics.xlsx"))
+
+save(
+  merged_no_qc, imputed, with_results, 
+  file = file.path(ppath, "data/data_objects.RData")
+)
 
 # 32. Perform manual annotation of metabolites and add manual
 # metabolite ID (column Curated_ID), MSI ID level (column ID_level), and
