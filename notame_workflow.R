@@ -37,8 +37,9 @@ ppath <- file.path("data")
 # 4. Choose from the following alternatives based on your data.
 # a) Load the Excel data containing all modes into R environment and create the
 #    SummarizedExperiment data containers.
+
 se <- import_from_excel(
-  file = system.file("extdata", "toy_notame_set.xlsx", package = "notame"),
+  file = file.path(ppath, "toy_notame_set.xlsx"),
   sheet = 1,
   split_by = "Mode"
 )
