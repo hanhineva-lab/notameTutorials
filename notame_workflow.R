@@ -34,9 +34,10 @@ dir.create(file.path("data", "figures"))
 # Set path for all data
 ppath <- file.path("data")
 
-# 4. Choose from the following alternatives based on your data.
+# 4. Choose one from the following alternatives based on your data.
 # a) Load the Excel data containing all modes into R environment and create the
 # SummarizedExperiment data containers.
+
 se <- import_from_excel(
   file = system.file("extdata", "toy_notame_set.xlsx", package = "notame"),
   sheet = 1,
@@ -60,8 +61,8 @@ for (mode in modesList) {
 se <- merge_notame_sets(object = modes)
 
 # c) Explore and test the package with toy_notame_set
+
 data(toy_notame_set)
-# And then assign it to data (remove the comment #)
 se <- toy_notame_set
 
 # 5. Classify the data as (metabolite) abundances. Create any necessary
@@ -211,7 +212,10 @@ clustered <- cluster_features(
 
 # 17. Calculate the summary statistics for each molecular feature
 
-summary_statistics <- summary_statistics(object = imputed, grouping_cols = NULL)
+summary_statistics <- summary_statistics(
+  object = imputed, # replace this with another object if needed
+  grouping_cols = NULL
+)
 
 # 18. Calculate the area under the curve (AUC) for each feature and
 # study subject in studies where samples from several time points are
@@ -337,7 +341,7 @@ rf_model <- muvr_analysis(
 # the outcome y, while controlling overfitting
 
 pls_opt <- mixomics_pls_optimize(
-  object = object,
+  object = imputed,
   y = "Group",
   ncomp = 3,
   nrepeat = 5
