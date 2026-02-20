@@ -28,11 +28,12 @@ library(PK)
 library(MuMIn)
 library(MUVR2)
 
-# Create the path for output data
-dir.create(file.path("data", "figures"))
+# Set path for your project
+ppath <- file.path("C:/project folder") # Replace path with your project folder
 
-# Set path for all data
-ppath <- file.path("data")
+# Create the path for output data and figures
+dir.create(file.path(ppath, "data"))
+dir.create(file.path(ppath, "figures"))
 
 # 4. Choose one from the following alternatives based on your data.
 # a) Load the Excel data containing all modes into R environment and create the
@@ -190,10 +191,10 @@ batch_corrected <- batchCorr::normalizeBatches(
 )
 
 # 15. Remove the QC sample information and save visualisations once more
-# without QC samples.
-merged_no_qc <- drop_qcs(imputed) # change object if batch correction was applied
+# on the imputed data without QC samples
+imputed <- drop_qcs(imputed) # change object if batch correction was applied
 save_QC_plots(
-  merged_no_qc,
+  imputed,
   prefix = file.path(ppath, "figures", paste0(name, "FULL_NO_QC")),
   group = "Group",
   time = "Time",
@@ -204,7 +205,7 @@ save_QC_plots(
 # 16. Optional step: Cluster the molecular features. Use the same time unit as
 #     the retention time information in the data.
 clustered <- cluster_features(
-  object = merged_no_qc,
+  object = imputed,
   rt_window = 1 / 60,
   corr_thresh = 0.9,
   d_thresh = 0.8
@@ -349,14 +350,25 @@ pls_opt <- mixomics_pls_optimize(
 # 31. Combine the statistics results (needed for manual annotation of
 #     metabolites) into the main preprocessed object. In this example, results
 #     from the Mann–Whitney U-test and linear model were chosen. Export the
-#     combined data object into an Excel table.
+#     combined data object into an Excel table. Save data objects to open them
+#     later.
 
 with_results <- join_rowData(imputed, cohens_d)
 with_results <- join_rowData(with_results, fc)
 with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
-write_to_excel(with_results, file = file.path(ppath, "imputed_statistics.xlsx"))
+write_to_excel(
+  with_results,
+  file = file.path(ppath, "data/imputed_statistics.xlsx")
+)
+
+save(
+  merged_no_qc,
+  imputed,
+  with_results,
+  file = file.path(ppath, "data/data_objects.RData")
+)
 
 # 32. Perform manual annotation of metabolites and add manual metabolite ID
 #     (column Curated_ID), MSI ID level (column ID_level), and manually chosen
