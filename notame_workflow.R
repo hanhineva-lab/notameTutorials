@@ -28,11 +28,12 @@ library(PK)
 library(MuMIn)
 library(MUVR2)
 
-# Create the path for output data
-dir.create(file.path("data", "figures"))
-
 # Set path for all data
-ppath <- file.path("data")
+ppath <- file.path("C:/project folder") # Replace path with your project folder
+
+# Create the path for output data and figures
+dir.create(file.path(ppath, "data"))
+dir.create(file.path(ppath, "figures"))
 
 # 4. Choose one from the following alternatives based on your data.
 # a) Load the Excel data containing all modes into R environment and create the
