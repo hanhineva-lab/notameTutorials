@@ -36,11 +36,12 @@ dir.create(file.path(ppath, "data"))
 dir.create(file.path(ppath, "figures"))
 
 # 4. Choose one from the following alternatives based on your data.
-# a) Load the Excel data containing all modes into R environment and create the
-# SummarizedExperiment data containers.
+# a) Load your own Excel data containing all modes into R environment and create the
+# SummarizedExperiment data containers. Replace data.xlsx with your
+# filename. Note that the file is assumed to be located in the main project directory.
 
 se <- import_from_excel(
-  file = system.file("extdata", "toy_notame_set.xlsx", package = "notame"),
+file = file.path(ppath, "data.xlsx"),
   sheet = 1,
   split_by = "Mode"
 )
