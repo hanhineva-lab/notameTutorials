@@ -359,7 +359,9 @@ with_results <- join_rowData(with_results, fc)
 with_results <- join_rowData(with_results, mann_whitney_results)
 with_results <- join_rowData(with_results, lm_results)
 
-write_to_excel(with_results, file = file.path(ppath, "imputed_statistics.xlsx"))
+write_to_excel(
+  with_results, 
+  file = file.path(ppath, "data/imputed_statistics.xlsx"))
 
 save(
   merged_no_qc, imputed, with_results, 
