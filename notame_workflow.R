@@ -360,14 +360,14 @@ with_results <- join_rowData(with_results, lm_results)
 
 write_to_excel(
   with_results,
-  file = file.path(ppath, "data/imputed_statistics.xlsx")
+  file = file.path(ppath, "data", "imputed_statistics.xlsx")
 )
 
 save(
   merged_no_qc,
   imputed,
   with_results,
-  file = file.path(ppath, "data/data_objects.RData")
+  file = file.path(ppath, "data", "data_objects.RData")
 )
 
 # 32. Perform manual annotation of metabolites and add manual metabolite ID
