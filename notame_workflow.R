@@ -337,7 +337,7 @@ rf_model <- muvr_analysis(
 #     outcome y, while controlling overfitting.
 
 pls_opt <- mixomics_pls_optimize(
-  object = object,
+  object = imputed,
   y = "Group",
   ncomp = 3,
   nrepeat = 5
