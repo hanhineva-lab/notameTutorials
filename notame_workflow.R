@@ -191,10 +191,10 @@ batch_corrected <- batchCorr::normalizeBatches(
 )
 
 # 15. Remove the QC sample information and save visualisations once more
-# without QC samples
-merged_no_qc <- drop_qcs(imputed) # change object if batch correction was applied
+# on the imputed data without QC samples
+imputed <- drop_qcs(imputed) # change object if batch correction was applied
 save_QC_plots(
-  merged_no_qc,
+  imputed,
   prefix = file.path(ppath, "figures", paste0(name, "FULL_NO_QC")),
   group = "Group",
   time = "Time",
@@ -205,7 +205,7 @@ save_QC_plots(
 # 16. Optional step: Cluster the molecular features. Use the same time
 # unit as the retention time information in the data
 clustered <- cluster_features(
-  object = merged_no_qc,
+  object = imputed,
   rt_window = 1 / 60,
   corr_thresh = 0.9,
   d_thresh = 0.8
