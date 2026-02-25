@@ -181,6 +181,7 @@ imputed <- impute_rf(object = imputed, all_features = TRUE)
 # one batch. By default, the QC samples are named as “QC”
 
 library(batchCorr)
+names(assays(imputed)) <- "abundances" # reintroduce abundances to assays
 batch_corrected <- batchCorr::normalizeBatches(
   peakTableCorr = imputed,
   batches = "Batch",
