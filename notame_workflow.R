@@ -8,6 +8,7 @@ if (!requireNamespace("renv", quietly = TRUE)) {
 }
 
 # Activate and restore environment from renv.lock
+# Run these lines one-by-one
 renv::activate()
 renv::restore()
 
