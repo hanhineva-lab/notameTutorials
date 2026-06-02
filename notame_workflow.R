@@ -28,6 +28,7 @@ library(lmerTest)
 library(PK)
 library(MuMIn)
 library(MUVR2)
+library(mixOmics)
 
 # Set path for your project
 # ppath <- file.path("C:/project folder") # Replace path with your project folder
