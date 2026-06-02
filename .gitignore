@@ -4,7 +4,8 @@ renv/*
 !renv/settings.json
 
 # Data directory
-data/
+data/*
+!data/curated_data.xlsx
 
 # RStudio files
 .Rproj.user/env/
