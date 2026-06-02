@@ -1,5 +1,7 @@
 # renv directory
-renv/
+renv/*
+!renv/activate.R
+!renv/settings.json
 
 # Data directory
 data/
@@ -17,7 +19,5 @@ data/
 # History files
 .Rhistory
 .Rapp.history
-
-.Rprofile
 
 Containerfile
