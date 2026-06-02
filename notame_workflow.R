@@ -372,13 +372,6 @@ write_to_excel(
   file = file.path(ppath, "data", "imputed_statistics.xlsx")
 )
 
-# save(
-#   merged_no_qc,
-#   imputed,
-#   with_results,
-#   file = file.path(ppath, "data", "data_objects.RData")
-# )
-
 # 32. Perform manual annotation of metabolites and add manual metabolite ID
 #     (column Curated_ID), MSI ID level (column ID_level), and manually chosen
 #     representative ion columns (column Representative_ion, where the
