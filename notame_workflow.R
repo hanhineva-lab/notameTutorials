@@ -30,23 +30,27 @@ library(MuMIn)
 library(MUVR2)
 
 # Set path for your project
-ppath <- file.path("C:/project folder") # Replace path with your project folder
+# ppath <- file.path("C:/project folder") # Replace path with your project folder
+ppath <- file.path(".") # This line sets the path to current directory (i.e. this repository)
 
 # Create the path for output data and figures
 dir.create(file.path(ppath, "data"))
 dir.create(file.path(ppath, "figures"))
 
-# 4. Choose one from the following alternatives based on your data. a) Load
-#    your own Excel data containing all modes into R environment and create the
-#    SummarizedExperiment data containers. Replace data.xlsx with your
+# 4. Choose one from the following alternatives based on your data.
+
+# a) Load own Excel data containing all modes into R environment and create
+#    the SummarizedExperiment data containers. Replace data.xlsx with your
 #    filename. Note that the file is assumed to be located in the main project
 #    directory.
+#
+# Uncomment 5 lines below to use your Excel file
 
-se <- import_from_excel(
-  file = file.path(ppath, "data.xlsx"),
-  sheet = 1,
-  split_by = "Mode"
-)
+# se <- import_from_excel(
+#   file = file.path(ppath, "data.xlsx"),
+#   sheet = 1,
+#   split_by = "Mode"
+# )
 
 # b) if the modes (in this example, four modes named hilic_neg.xlsx, etc.) are
 #    in separate spreadsheets, load them separately while ensuring they have the
@@ -54,16 +58,16 @@ se <- import_from_excel(
 #    is recommended to merge them as well at this point into one
 #    SummarizedExperiment object.
 
-modesList <- c("HILIC_neg", "HILIC_pos", "RP_neg", "RP_pos")
-modes <- list()
-for (mode in modesList) {
-  # Read single mode, set it in the list
-  modes[[mode]] <- import_from_excel(
-    file = file.path(ppath, mode, ".xlsx"),
-    name = mode
-  )
-}
-se <- merge_notame_sets(object = modes)
+# modesList <- c("HILIC_neg", "HILIC_pos", "RP_neg", "RP_pos")
+# modes <- list()
+# for (mode in modesList) {
+#   # Read single mode, set it in the list
+#   modes[[mode]] <- import_from_excel(
+#     file = file.path(ppath, mode, ".xlsx"),
+#     name = mode
+#   )
+# }
+# se <- merge_notame_sets(object = modes)
 
 # c) Explore and test the package with toy_notame_set.
 
