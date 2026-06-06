@@ -132,8 +132,8 @@ for (i in seq_along(modes)) {
     id = "Subject_ID",
     color = "Group"
   ) # Visualize data after drift correction
-  corrected <- corrected %>%
-    assess_quality() %>%
+  corrected <- corrected |>
+    assess_quality() |>
     flag_quality() # Flag low-quality features
   save_QC_plots(
     corrected,
@@ -200,7 +200,7 @@ batch_corrected <- batchCorr::normalizeBatches(
 )
 
 # 15. Remove the QC sample information and save visualisations once more
-# on the imputed data without QC samples
+#     on the imputed data without QC samples.
 imputed <- drop_qcs(imputed) # change object if batch correction was applied
 save_QC_plots(
   imputed,
