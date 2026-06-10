@@ -22,3 +22,29 @@ Currently, it contains the following files:
    `renv.lock` file).
 6. Run the lines up until and optionally including `renv::restore()`. This step
    should install all the required packages to be able to run the script.
+
+### Docker Container (For Advanced Users)
+
+This repository also includes a Docker container with all the packages
+pre-installed. Learn how to install it on
+[Linux](https://docs.docker.com/engine/install/).
+
+Install [rootless Docker](https://docs.docker.com/engine/security/rootless/).
+
+After that, in the terminal run
+
+```shell
+docker run --rm -it -e PASSWORD=1234 -p 8787:8787 \
+  ghcr.io/hanhineva-lab/notametutorials:latest
+```
+
+In your browser, go to `http://localhost:8787` and enter RStudio with the
+username `root` and the password `1234`. In the R console, run
+`setwd("/project")` to enter the working directory of the script.
+
+> [!TIP]
+> If you modify anything inside the Docker container and then stop it, the data
+> will be lost. To persist it, add the `--volume ./:/project` parameter to map
+> the current directory on your computer to the `./project` directory inside
+> the Docker container. Read more about the volumes in the [official
+> documentation](https://docs.docker.com/engine/storage/volumes/).
