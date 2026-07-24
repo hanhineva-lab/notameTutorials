@@ -40,7 +40,8 @@ docker run --rm -it -e PASSWORD=1234 -p 8787:8787 \
 
 In your browser, go to `http://localhost:8787` and enter RStudio with the
 username `root` and the password `1234`. In the R console, run
-`setwd("/project")` to enter the working directory of the script.
+`setwd("/project")` to enter the working directory of the script. You can now
+open the `notame_workflow.R` script and run the code.
 
 > [!TIP]
 > If you modify anything inside the Docker container and then stop it, the data
